@@ -1,6 +1,6 @@
 #include "fileIO.h"
 // using namespace std;
-void FileIO::getCharFreq(string sourceFileName,string desFileName){
+map<char, long long> FileIO::getCharFreq(){
     //获取要输入的文件和输出的文件
     //用二进制流传输
     ofstream fout(desFileName,ios::binary);
@@ -14,7 +14,7 @@ void FileIO::getCharFreq(string sourceFileName,string desFileName){
         fout.write(buffer, sizeof(char));
         //如果map里没有这个字符,就加入这个字符并将其频度设为1
         if(charFreq.count(buffer[0])==0){
-            charFreq.insert(map<char, long long>::value_type(buffer[0], 1));
+            charFreq.insert(map<char, long long>::value_type(buffer[0], 1L));
         }
         //如果map中有这个字符,就将其频度++
         else{
@@ -23,8 +23,12 @@ void FileIO::getCharFreq(string sourceFileName,string desFileName){
             charFreq[buffer[0]] = freq;
         }
     }
+//     map<char, long long>::iterator it;
+// for(it = charFreq.begin(); it != charFreq.end(); it++){
+// cout <<  it->second << "\n"; //first 是key , second 是 value
+// }
     //关闭文件流
     fout.close();
     fin.close();
-    
+    return charFreq;
 }

@@ -9,8 +9,14 @@
 using namespace std;
 class FileIO{
     public:
-        void getCharFreq(string sourceFileName,string desFileName);
-        FileIO(){}
+        map<char, long long> getCharFreq();
+        FileIO(string sourceFileName,string desFileName){
+            this->sourceFileName = sourceFileName;
+            this->desFileName = desFileName;
+        }
+    private:
+        string sourceFileName;
+        string desFileName;
 };
 
 #endif
