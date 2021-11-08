@@ -29,11 +29,12 @@ map<char, long long> FileIO::getCharFreq(){
     return charFreq;
 }
 
-void FileIO::encodeFile(string desFileName,map<char, string> charCode){
+void FileIO::encodeFile(string desFileName,map<char, string> charCode,map<char, long long> charFreq){
     ofstream fout(desFileName, ios::binary);
     //先将文件的头信息写好
     fileHead filehead;
     // 获取字符的种类,写头信息
+    filehead.lastValidBit = getLastValidBit(charFreq, charCode);
     filehead.alphaVarity = charCode.size();
     fout.write((char *)&filehead, sizeof(filehead));
     //写字符的频度等等
@@ -66,4 +67,14 @@ void FileIO::encodeFile(string desFileName,map<char, string> charCode){
     fout.write(&towrite, sizeof(char));
     // cout << bitsToWrite << endl;
     fout.close();
+}
+
+int FileIO::getLastValidBit(map<char, long long> charFreq,map<char, string> charCode){
+    int sum = 0;
+    for(auto i: charCode){
+        sum += i.second.size() * charFreq.at(i.first);
+        sum &= 0xFF;
+    }
+    sum &= 0x7;
+    return sum == 0 ? 8 : sum;
 }

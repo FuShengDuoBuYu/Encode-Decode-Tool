@@ -31,14 +31,16 @@ class FileIO{
         string sourceFileName;
         string desFileName;
         //压缩文件的方法
-        void encodeFile(string desFileName,map<char, string> charCode);
+        void encodeFile(string desFileName,map<char, string> charCode,map<char, long long> charFreq);
         map<char, long long> getCharFreq();
         FileIO(string sourceFileName,string desFileName){
             this->sourceFileName = sourceFileName;
             this->desFileName = desFileName;
         }
         
-        
+        //获取最后一个字节的有效位数的方法
+        int getLastValidBit(map<char, long long> charFreq, map<char, string> charCode);
+
     private:
         
 };
