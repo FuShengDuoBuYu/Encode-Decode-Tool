@@ -21,10 +21,6 @@ map<char, long long> FileIO::getCharFreq(){
             charFreq[buffer[0]] = freq;
         }
     }
-//     map<char, long long>::iterator it;
-// for(it = charFreq.begin(); it != charFreq.end(); it++){
-// cout << it->second << "\n"; //first 是key , second 是 value
-// }
     fin.close();
     return charFreq;
 }
@@ -42,30 +38,29 @@ void FileIO::encodeFile(string desFileName,map<char, string> charCode,map<char, 
         alphaCode af(i);
         fout.write((char*)&af,sizeof(af));
     }
-    //写文件的内容
-    ifstream fin(sourceFileName,ios::binary);
-    string bitsToWrite = "";
-    while(!fin.eof()){
-        //每次只接收一个字符,于是会有2^8种字符
-        char buffer[1];
-        fin.read(buffer, sizeof(char));
-        //获取此字符对应的哈夫曼编码
-        string codeOfAlpha = charCode[buffer[0]];
-        //将该字符串放到要写入的bits里
-        bitsToWrite += codeOfAlpha;
-        //一旦字符串长度大于8,就将其转为一个char并写入文件
-        while (bitsToWrite.length() >= 8){
-            char towrite = encode10to2(bitsToWrite.substr(0, 8));
-            fout.write(&towrite, sizeof(char));
-            bitsToWrite = bitsToWrite.substr(8, bitsToWrite.length() - 8);
+    // //写文件的内容
+    // ifstream fin(sourceFileName,ios::binary);
+    // string bitsToWrite = "";
+    // while(!fin.eof()){
+    //     //每次只接收一个字符,于是会有2^8种字符
+    //     char buffer[1];
+    //     fin.read(buffer, sizeof(char));
+    //     //获取此字符对应的哈夫曼编码
+    //     string codeOfAlpha = charCode[buffer[0]];
+    //     //将该字符串放到要写入的bits里
+    //     bitsToWrite += codeOfAlpha;
+    //     //一旦字符串长度大于8,就将其转为一个char并写入文件
+    //     while (bitsToWrite.length() >= 8){
+    //         char towrite = encode10to2(bitsToWrite.substr(0, 8));
+    //         fout.write(&towrite, sizeof(char));
+    //         bitsToWrite = bitsToWrite.substr(8, bitsToWrite.length() - 8);
 
-        }
-    }
-    //将最后不足8位的bit补全并写入
-    bitsToWrite.resize(8,'0');
-    char towrite = encode10to2(bitsToWrite);
-    fout.write(&towrite, sizeof(char));
-    // cout << bitsToWrite << endl;
+    //     }
+    // }
+    // //将最后不足8位的bit补全并写入
+    // bitsToWrite.resize(8,'0');
+    // char towrite = encode10to2(bitsToWrite);
+    // fout.write(&towrite, sizeof(char));
     fout.close();
 }
 
@@ -77,4 +72,28 @@ int FileIO::getLastValidBit(map<char, long long> charFreq,map<char, string> char
     }
     sum &= 0x7;
     return sum == 0 ? 8 : sum;
+}
+
+fileHead FileIO::readFileHead(){
+    fileHead filehead;
+    ifstream is(sourceFileName, ios::binary);
+    is.read((char *)&filehead, sizeof(filehead));
+    is.close();
+    return filehead;
+}
+
+map<string, char> FileIO::readFileHaffmanString(int alphaVariety){
+    ifstream is(sourceFileName, ios::binary);
+    map<string, char> codeChar;
+    //定位在头信息后
+    is.seekg(sizeof(fileHead));
+    //将各个字符的编码string获取
+    for (int i = 0; i < alphaVariety;i++){
+        alphaCode af;
+        is.read((char *)&af, sizeof(af));
+        cout << sizeof(af) << endl;
+        codeChar.insert(pair<string, char>(af.code, af.alpha));
+    }
+    is.close();
+    return codeChar;
 }

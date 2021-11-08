@@ -37,12 +37,16 @@ class FileIO{
             this->sourceFileName = sourceFileName;
             this->desFileName = desFileName;
         }
-        
         //获取最后一个字节的有效位数的方法
         int getLastValidBit(map<char, long long> charFreq, map<char, string> charCode);
 
+
+        //读取一个文件中的头信息的方法
+        fileHead readFileHead();
+        //获取编码后的char的string并形成一个map
+        map<string, char> readFileHaffmanString(int alphaVariety);
+
     private:
-        
 };
 
 
