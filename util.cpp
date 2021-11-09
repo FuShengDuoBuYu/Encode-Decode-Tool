@@ -23,3 +23,15 @@ int getEncodeOrDecode(){
         }
     }
 }
+
+int encode2to10(string s){
+    bitset<256> bit(s);
+    int res = bit.to_ulong();
+    return res;
+}
+
+string encode10to2(int length, int value){
+    bitset<256> bit(value);
+    string temp = bit.to_string();
+    return temp.substr(temp.length()-length,length);
+}

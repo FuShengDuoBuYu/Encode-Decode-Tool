@@ -19,11 +19,15 @@ struct fileHead{
 //字母及其频度
 struct alphaCode{
     char alpha;
-    string code;
+    //将0101字符串转为int的十进制存储
+    int code;
+    //2进制0101字符串的长度
+    int length;
     alphaCode(){}
     alphaCode(const pair<char ,string>& x){
         this->alpha = x.first;
-        this->code = x.second;
+        this->code = encode2to10(x.second);
+        this->length = x.second.length();
     }
 };
 class FileIO{

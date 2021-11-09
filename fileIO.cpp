@@ -91,8 +91,7 @@ map<string, char> FileIO::readFileHaffmanString(int alphaVariety){
     for (int i = 0; i < alphaVariety;i++){
         alphaCode af;
         is.read((char *)&af, sizeof(af));
-        cout << sizeof(af) << endl;
-        codeChar.insert(pair<string, char>(af.code, af.alpha));
+        codeChar.insert(make_pair(encode10to2(af.length,af.code),af.alpha));
     }
     is.close();
     return codeChar;
