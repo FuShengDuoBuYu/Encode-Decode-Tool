@@ -49,6 +49,8 @@ class FileIO{
         fileHead readFileHead();
         //获取编码后的char的string并形成一个map
         map<string, char> readFileHaffmanString(int alphaVariety);
+        //解压缩文件
+        void decodeFile(fileHead filehead,map<string,char> decodeHaffmanCode);
 
     private:
 };

@@ -38,29 +38,29 @@ void FileIO::encodeFile(string desFileName,map<char, string> charCode,map<char, 
         alphaCode af(i);
         fout.write((char*)&af,sizeof(af));
     }
-    // //写文件的内容
-    // ifstream fin(sourceFileName,ios::binary);
-    // string bitsToWrite = "";
-    // while(!fin.eof()){
-    //     //每次只接收一个字符,于是会有2^8种字符
-    //     char buffer[1];
-    //     fin.read(buffer, sizeof(char));
-    //     //获取此字符对应的哈夫曼编码
-    //     string codeOfAlpha = charCode[buffer[0]];
-    //     //将该字符串放到要写入的bits里
-    //     bitsToWrite += codeOfAlpha;
-    //     //一旦字符串长度大于8,就将其转为一个char并写入文件
-    //     while (bitsToWrite.length() >= 8){
-    //         char towrite = encode10to2(bitsToWrite.substr(0, 8));
-    //         fout.write(&towrite, sizeof(char));
-    //         bitsToWrite = bitsToWrite.substr(8, bitsToWrite.length() - 8);
+    //写文件的内容
+    ifstream fin(sourceFileName,ios::binary);
+    string bitsToWrite = "";
+    while(!fin.eof()){
+        //每次只接收一个字符,于是会有2^8种字符
+        char buffer[1];
+        fin.read(buffer, sizeof(char));
+        //获取此字符对应的哈夫曼编码
+        string codeOfAlpha = charCode[buffer[0]];
+        //将该字符串放到要写入的bits里
+        bitsToWrite += codeOfAlpha;
+        //一旦字符串长度大于8,就将其转为一个char并写入文件
+        while (bitsToWrite.length() >= 8){
+            char towrite = encode10to2(bitsToWrite.substr(0, 8));
+            fout.write(&towrite, sizeof(char));
+            bitsToWrite = bitsToWrite.substr(8, bitsToWrite.length() - 8);
 
-    //     }
-    // }
-    // //将最后不足8位的bit补全并写入
-    // bitsToWrite.resize(8,'0');
-    // char towrite = encode10to2(bitsToWrite);
-    // fout.write(&towrite, sizeof(char));
+        }
+    }
+    //将最后不足8位的bit补全并写入
+    bitsToWrite.resize(8,'0');
+    char towrite = encode10to2(bitsToWrite);
+    fout.write(&towrite, sizeof(char));
     fout.close();
 }
 
@@ -95,4 +95,21 @@ map<string, char> FileIO::readFileHaffmanString(int alphaVariety){
     }
     is.close();
     return codeChar;
+}
+
+void FileIO::decodeFile(fileHead filehead,map<string,char> decodeHaffmanCode){
+    ifstream is(sourceFileName, ios::binary);
+    //定位到存储文件的位置
+    is.seekg(sizeof(filehead) + filehead.alphaVarity * sizeof(alphaCode));
+    //开始读取
+    string encodedBitsBuffer = "";
+    while(!is.eof()){
+        //
+        if(encodedBitsBuffer.length()<2048){
+            char tempToRead;
+            is.read(&tempToRead, sizeof(char));
+            bitset<8> bit(tempToRead);
+            encodedBitsBuffer += bit.to_string();
+        }
+    }
 }

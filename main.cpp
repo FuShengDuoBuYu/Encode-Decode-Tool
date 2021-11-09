@@ -15,12 +15,13 @@ int main(int argc,char *argv[]){
             break;
         }
         case 2:
-            FileIO fileIO= FileIO("b.hfm","b.exe");
+            FileIO fileIO= FileIO("b.hfm","c.exe");
             //获取头信息
             fileHead filehead = fileIO.readFileHead();
             //获取对应文件的decodeHaffmanCode
             map<string,char> codeChar= fileIO.readFileHaffmanString(filehead.alphaVarity);
-            cout << codeChar.size() << endl;
+            //解压缩文件
+            fileIO.decodeFile(filehead,codeChar);
     }
     
     return 0;
