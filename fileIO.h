@@ -8,6 +8,7 @@
 #include <vector>
 #include <bitset>
 #include "util.h"
+#include <stack>
 using namespace std;
 // 每个文件的头部,包含文件的基信息
 struct fileHead{

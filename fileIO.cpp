@@ -99,17 +99,31 @@ map<string, char> FileIO::readFileHaffmanString(int alphaVariety){
 
 void FileIO::decodeFile(fileHead filehead,map<string,char> decodeHaffmanCode){
     ifstream is(sourceFileName, ios::binary);
+    ofstream out(desFileName, ios::binary);
     //定位到存储文件的位置
     is.seekg(sizeof(filehead) + filehead.alphaVarity * sizeof(alphaCode));
     //开始读取
     string encodedBitsBuffer = "";
+    bool deleted = false;
     while(!is.eof()){
-        //
-        if(encodedBitsBuffer.length()<2048){
+        //先读够足够的缓冲
+        while(encodedBitsBuffer.length()<256&&!is.eof()){
             char tempToRead;
             is.read(&tempToRead, sizeof(char));
             bitset<8> bit(tempToRead);
             encodedBitsBuffer += bit.to_string();
+        }
+        // if(is.eof())
+        map<string , char>::iterator it;
+        //匹配是否存在某个字符串
+        for (int i = 1;;i++){
+            string compare = encodedBitsBuffer.substr(0, i);
+            it = decodeHaffmanCode.find(compare);
+            if(it!=decodeHaffmanCode.end()){
+                out.write(&decodeHaffmanCode[compare], sizeof(char));
+                encodedBitsBuffer = encodedBitsBuffer.substr(i, encodedBitsBuffer.length() - i);
+                break;
+            }
         }
     }
 }

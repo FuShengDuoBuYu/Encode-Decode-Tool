@@ -4,7 +4,8 @@ int main(int argc,char *argv[]){
     int mode = getEncodeOrDecode();
     switch(mode){
         case 1:{
-            FileIO fileIO= FileIO("b.exe","b.hfm");
+            vector<string> filename = getEncodeName();
+            FileIO fileIO= FileIO(filename[0],filename[1]);
             //字符的频率map
             map<char, long long> charFreq = fileIO.getCharFreq();
             Haffman haffman = Haffman(charFreq);
@@ -15,7 +16,8 @@ int main(int argc,char *argv[]){
             break;
         }
         case 2:
-            FileIO fileIO= FileIO("b.hfm","c.exe");
+            vector<string> filename = getDecodeName();
+            FileIO fileIO= FileIO(filename[0],filename[1]);
             //获取头信息
             fileHead filehead = fileIO.readFileHead();
             //获取对应文件的decodeHaffmanCode
