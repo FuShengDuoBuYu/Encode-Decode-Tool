@@ -33,10 +33,19 @@ class Haffman{
     public :
         //获取哈夫曼编码
         map<char, string> createHaffmanCode();
+        //生成一个哈夫曼树
+        void createHaffmanTree();
+        //用于生成哈夫曼树的优先队列
+        priority_queue<Node> nodeQueue;
+        //判断是否是叶子结点
+        static bool isLeaf(Node* node){
+            return node->left == nullptr && node->right == nullptr;
+        }
         //构造方法
         Haffman(map<char, long long> charFreq){
             //通过map来构建一个以频率为权值的优先队列
             for(auto i:charFreq){
+                // cout << i.second << endl;
                 Node node(i.first, i.second);
                 nodeQueue.push(node);
             }
@@ -48,16 +57,11 @@ class Haffman{
             deleteNode(node.right);
         }
     private:
-        //判断是否是叶子结点
-        static bool isLeaf(Node* node){
-            return node->left == nullptr && node->right == nullptr;
-        }
-        //用于生成哈夫曼树的优先队列
-        priority_queue<Node> nodeQueue;
+        
+        
         //递归删除结点
         void deleteNode(Node* node);
-        //先生成一个哈夫曼树
-        void createHaffmanTree();
+        
         //递归生成哈夫曼编码的子函数
         void subCreateHaffmanCode(Node* root,string prefix,map<char, string>& charCode);
 };

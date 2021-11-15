@@ -9,6 +9,7 @@
 #include <bitset>
 #include "util.h"
 #include <stack>
+#include "Haffman.h"
 using namespace std;
 // 每个文件的头部,包含文件的基信息
 struct fileHead{
@@ -20,15 +21,12 @@ struct fileHead{
 //字母及其频度
 struct alphaCode{
     char alpha;
-    //将0101字符串转为int的十进制存储
-    int code;
-    //2进制0101字符串的长度
-    int length;
+    //频度
+    long long freq;
     alphaCode(){}
-    alphaCode(const pair<char ,string>& x){
+    alphaCode(const pair<char ,long long>& x){
         this->alpha = x.first;
-        this->code = encode2to10(x.second);
-        this->length = x.second.length();
+        this->freq = x.second;
     }
 };
 class FileIO{
@@ -36,7 +34,7 @@ class FileIO{
         string sourceFileName;
         string desFileName;
         //压缩文件的方法
-        void encodeFile(string desFileName,map<char, string> charCode,map<char, long long> charFreq);
+        void encodeFile(string desFileName,map<char, string> charCode,map<char, long long> charFreq,int writeMode);
         map<char, long long> getCharFreq();
         FileIO(string sourceFileName,string desFileName){
             this->sourceFileName = sourceFileName;
@@ -48,10 +46,10 @@ class FileIO{
 
         //读取一个文件中的头信息的方法
         fileHead readFileHead();
-        //获取编码后的char的string并形成一个map
-        map<string, char> readFileHaffmanString(int alphaVariety);
+        //获取文件原char和频率的信息以恢复哈夫曼树
+        map<char, long long> readFileHaffmanFreq(int alphaVariety);
         //解压缩文件
-        void decodeFile(fileHead filehead,map<string,char> decodeHaffmanCode);
+        void decodeFile(fileHead filehead,map<char, long long> decodeHaffmanFreq);
 
     private:
 };

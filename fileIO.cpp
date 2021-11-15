@@ -1,5 +1,4 @@
 #include "fileIO.h"
-// using namespace std;
 map<char, long long> FileIO::getCharFreq(){
     //获取要输入的文件和输出的文件
     //用二进制流传输
@@ -11,7 +10,7 @@ map<char, long long> FileIO::getCharFreq(){
         char buffer[1];
         fin.read(buffer, sizeof(char));
         //如果map里没有这个字符,就加入这个字符并将其频度设为1
-        if(charFreq.count(buffer[0])==0){
+        if(charFreq.size()!=256 && charFreq.count(buffer[0])==0){
             charFreq.insert(map<char, long long>::value_type(buffer[0], 1L));
         }
         //如果map中有这个字符,就将其频度++
@@ -25,8 +24,14 @@ map<char, long long> FileIO::getCharFreq(){
     return charFreq;
 }
 
-void FileIO::encodeFile(string desFileName,map<char, string> charCode,map<char, long long> charFreq){
-    ofstream fout(desFileName, ios::binary);
+void FileIO::encodeFile(string desFileName,map<char, string> charCode,map<char, long long> charFreq,int writeMode){
+    ofstream fout;
+    //如果是文件夹要写,就是追加写入
+    if(writeMode==1){
+        fout = ofstream(desFileName, ios::binary|ios::app);
+    }
+    else
+        fout = ofstream(desFileName, ios::binary);
     //先将文件的头信息写好
     fileHead filehead;
     // 获取字符的种类,写头信息
@@ -34,7 +39,7 @@ void FileIO::encodeFile(string desFileName,map<char, string> charCode,map<char, 
     filehead.alphaVarity = charCode.size();
     fout.write((char *)&filehead, sizeof(filehead));
     //写字符的频度等等
-    for(auto i:charCode){
+    for(auto i:charFreq){
         alphaCode af(i);
         fout.write((char*)&af,sizeof(af));
     }
@@ -54,7 +59,6 @@ void FileIO::encodeFile(string desFileName,map<char, string> charCode,map<char, 
             char towrite = encode10to2(bitsToWrite.substr(0, 8));
             fout.write(&towrite, sizeof(char));
             bitsToWrite = bitsToWrite.substr(8, bitsToWrite.length() - 8);
-
         }
     }
     //将最后不足8位的bit补全并写入
@@ -82,48 +86,49 @@ fileHead FileIO::readFileHead(){
     return filehead;
 }
 
-map<string, char> FileIO::readFileHaffmanString(int alphaVariety){
+map<char, long long> FileIO::readFileHaffmanFreq(int alphaVariety){
     ifstream is(sourceFileName, ios::binary);
-    map<string, char> codeChar;
+    map<char, long long> codeFreq;
     //定位在头信息后
     is.seekg(sizeof(fileHead));
-    //将各个字符的编码string获取
+    //将各个字符的频度获取
     for (int i = 0; i < alphaVariety;i++){
         alphaCode af;
         is.read((char *)&af, sizeof(af));
-        codeChar.insert(make_pair(encode10to2(af.length,af.code),af.alpha));
+        codeFreq.insert(make_pair(af.alpha,af.freq));
     }
     is.close();
-    return codeChar;
+    return codeFreq;
 }
 
-void FileIO::decodeFile(fileHead filehead,map<string,char> decodeHaffmanCode){
+void FileIO::decodeFile(fileHead filehead,map<char, long long> charFreq){
     ifstream is(sourceFileName, ios::binary);
     ofstream out(desFileName, ios::binary);
+    //空文件直接return
+    if(charFreq.size()==0){
+        return;
+    }
+    //恢复哈夫曼树
+    Haffman haffman = Haffman(charFreq);
+    haffman.createHaffmanTree();
+    Node root = haffman.nodeQueue.top();
+    Node temp = root;
     //定位到存储文件的位置
-    is.seekg(sizeof(filehead) + filehead.alphaVarity * sizeof(alphaCode));
+    is.seekg(sizeof(filehead) + filehead.alphaVarity * sizeof(alphaCode),ios::beg);
     //开始读取
-    string encodedBitsBuffer = "";
-    bool deleted = false;
+    char readBuf;
     while(!is.eof()){
-        //先读够足够的缓冲
-        while(encodedBitsBuffer.length()<256&&!is.eof()){
-            char tempToRead;
-            is.read(&tempToRead, sizeof(char));
-            bitset<8> bit(tempToRead);
-            encodedBitsBuffer += bit.to_string();
-        }
-        // if(is.eof())
-        map<string , char>::iterator it;
-        //匹配是否存在某个字符串
-        for (int i = 1;;i++){
-            string compare = encodedBitsBuffer.substr(0, i);
-            it = decodeHaffmanCode.find(compare);
-            if(it!=decodeHaffmanCode.end()){
-                out.write(&decodeHaffmanCode[compare], sizeof(char));
-                encodedBitsBuffer = encodedBitsBuffer.substr(i, encodedBitsBuffer.length() - i);
-                break;
+        is.read(&readBuf, sizeof(char));
+        for (int i = 7; i >= 0;i--){
+            if(readBuf&(1<<i))
+                temp = *temp.right;
+            else
+                temp = *temp.left;
+            if(haffman.isLeaf(&temp)){
+                out.write(&temp.c, sizeof(char));
+                temp = root;
             }
         }
     }
+    out.close();
 }

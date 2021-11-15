@@ -1,16 +1,11 @@
 #include "Haffman.h"
 
-map<char, string> Haffman::createHaffmanCode(){
-    
+map<char, string> Haffman::createHaffmanCode(){ 
     string haffmanCode;
     map<char, string> charCode;
     createHaffmanTree();
     Node root = nodeQueue.top();
-    subCreateHaffmanCode(&root,haffmanCode,charCode);
-    // map<char, string>::iterator it;
-    // for(it = charCode.begin(); it != charCode.end(); it++){
-    // cout <<  it->second << "\n"; //first 是key , second 是 value
-    // }
+    subCreateHaffmanCode(&root,haffmanCode,charCode); 
     return charCode;
 }
 

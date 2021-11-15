@@ -80,27 +80,22 @@ vector<string> getDecodeName(){
     fstream testFile;
     vector<string> res;
     while(1){
-        testFile.open(sourceFileName);
+        testFile.open(sourceFileName+".hfm");
         if(!testFile){
             cout << "can not find this file,please input again:" << endl;
             cin >> sourceFileName;
         }else{
             testFile.close();
-            res.push_back(sourceFileName);
+            res.push_back(sourceFileName+".hfm");
             break;
         }
     }
     cout << "------------------------------------" << endl;
     //输出文件
     cout << "please input the output filename that you want:" << endl << "(include the suffix)" << endl;
-    cout << "[! input '.' to use the origin filename]" << endl;
     string desFileName;
     cin >> desFileName;
-    if(desFileName=="."){
-        res.push_back(sourceFileName.substr(0, sourceFileName.find(".") + 1)+"hfm");
-    }
-    else{
-        res.push_back(desFileName + ".hfm");
-    }
+    res.push_back(desFileName);
+    
     return res;
 }
