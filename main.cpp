@@ -57,6 +57,18 @@ void encodeDir(string path,string desFilename){
         out << fileName[i] << endl;
     }
     out.close();
+    //写各个二进制文件
+    vector<long long> afterSizes;
+    for (int i = 0; i < fileName.size(); i++){
+        int aftersize = encodeSingleFile(fileName[i], desFilename, 1);
+        afterSizes.push_back(aftersize);
+    }
+    //写压缩后的大小
+    ofstream fout(desFilename,ios::app);
+    fout << "\n";
+    for (int i = 0; i < afterSizes.size();i++){
+        fout << " " << afterSizes[i] ;
+    }
 }
 
 void decodeDir(string sourceFilename,string desFilename){
@@ -75,23 +87,19 @@ void decodeDir(string sourceFilename,string desFilename){
     int fileNums =  atoi(filesNum.c_str());
     //文件路径
     vector<string> filePaths;
-    //文件大小
-    vector<string> filesize;
     for (int i = 0; i < fileNums;i++){
         getline(is,path);
         filePaths.push_back(path);
-        getline(is, str_filesize);
-        filesize.push_back(str_filesize);
     }
     int startIndex = is.tellg();
     is.clear();
     is.close();
-    vector<long long> aftersize = getAfterSize(sourceFilename,filesize.size());
+    vector<long long> aftersize = getAfterSize(sourceFilename,filePaths.size());
     //解压各个分文件
 
     ifstream is2(sourceFilename, ios::binary);
     is2.seekg(startIndex);
-    for (int i = 0; i < filesize.size();i++){
+    for (int i = 0; i < filePaths.size();i++){
         ofstream temp("temp.hfm",ios::binary);
         //将每个文件的二进制数据写到temp里
         char buffer;
@@ -99,7 +107,7 @@ void decodeDir(string sourceFilename,string desFilename){
             is2.read(&buffer, sizeof(char));
             temp.write(&buffer, sizeof(char));
         }
-        decodeSingleFile("temp.hfm",desFilename+"\\"+filePaths[i]);
+        decodeSingleFile("temp.hfm",".\\"+desFilename+"\\"+filePaths[i]);
         remove("temp.hfm");
     }
 }

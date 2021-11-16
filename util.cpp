@@ -90,13 +90,19 @@ vector<string> getDecodeName(){
             //判断是文件夹还是文件
             string firstLine;
             getline(testFile, firstLine);
-            if(atoi(firstLine.c_str())==0){
-                //文件
-                res.push_back("1");
-            }
-            else{
+            if(firstLine=="0"){
                 //文件夹
                 res.push_back("0");
+            }
+            else{
+                if(atoi(firstLine.c_str())==0){
+                    //文件
+                    res.push_back("1");
+                }
+                else{
+                    //文件夹
+                    res.push_back("0");
+                }
             }
             testFile.close();
             res.push_back(sourceFileName);
