@@ -23,3 +23,7 @@ struct fileNode{
         this->filesize = filesize;
     }
 };
+struct dirInfo{
+    int fileNum;
+    
+};

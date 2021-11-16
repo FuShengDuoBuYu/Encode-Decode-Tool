@@ -44,17 +44,17 @@ vector<string> getEncodeName(){
     cin >> sourceFileName;
     fstream testFile;
     vector<string> res;
-    while(1){
-        testFile.open(sourceFileName);
-        if(!testFile){
-            cout << "can not find this file,please input again:" << endl;
-            cin >> sourceFileName;
-        }else{
-            testFile.close();
-            res.push_back(sourceFileName);
-            break;
-        }
-    }
+    // while(1){
+    //     testFile.open(sourceFileName);
+    //     if(!testFile){
+    //         cout << "can not find this file,please input again:" << endl;
+    //         cin >> sourceFileName;
+    //     }else{
+    //         testFile.close();
+    //         res.push_back(sourceFileName);
+    //         break;
+    //     }
+    // }
     cout << "------------------------------------" << endl;
     //输出文件
     cout << "please input the output filename that you want:" << endl << "( Do not include the suffix, auto append '.hfm')" << endl;
