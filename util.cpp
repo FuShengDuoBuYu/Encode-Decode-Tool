@@ -37,65 +37,100 @@ string encode10to2(int length, int value){
 }
 
 vector<string> getEncodeName(){
-    //输入文件
+    vector<string> res;
+    //输入文件(夹)
     cout << "------------------------------------" << endl;
     cout << "please input the filename that you want to encode:" << endl << "(include the suffix)" << endl;
-    string sourceFileName;
-    cin >> sourceFileName;
-    fstream testFile;
-    vector<string> res;
-    // while(1){
-    //     testFile.open(sourceFileName);
-    //     if(!testFile){
-    //         cout << "can not find this file,please input again:" << endl;
-    //         cin >> sourceFileName;
-    //     }else{
-    //         testFile.close();
-    //         res.push_back(sourceFileName);
-    //         break;
-    //     }
-    // }
+    //输入的文件(夹)目录
+    while(1){
+        string sourceFileName;
+        getline(cin, sourceFileName);
+        path str(sourceFileName);
+        directory_entry entry(str);
+        //文件夹
+        if(entry.status().type() == file_type::directory){
+            res.push_back("0");
+            res.push_back(sourceFileName);
+            break;
+        }
+        //未找到文件
+        else if(entry.status().type() == file_type::not_found){
+            cout << "not found file or dir. input again:" << endl;
+        }
+        //文件
+        else{
+            res.push_back("1");
+            res.push_back(sourceFileName);
+        }
+    }
     cout << "------------------------------------" << endl;
-    //输出文件
-    cout << "please input the output filename that you want:" << endl << "( Do not include the suffix, auto append '.hfm')" << endl;
-    cout << "[! input '.' to use the origin filename]" << endl;
+    //输出文件(夹)
+    cout << "please input the output filename that you want:" << endl << "(include the suffix)" << endl;
     string desFileName;
     cin >> desFileName;
-    if(desFileName=="."){
-        res.push_back(sourceFileName.substr(0, sourceFileName.find(".") + 1)+"hfm");
-    }
-    else{
-        res.push_back(desFileName + ".hfm");
-    }
+    res.push_back(desFileName);
     return res;
 }
 
-//todo
 vector<string> getDecodeName(){
     //输入文件
     cout << "------------------------------------" << endl;
-    cout << "please input the filename that you want to decode:" << endl << "( Do not include the suffix, auto append '.hfm')" << endl;
+    cout << "please input the filename that you want to decode:" << endl << "(include the suffix)" << endl;
     string sourceFileName;
-    cin >> sourceFileName;
+    getline(cin, sourceFileName);
+    cout << sourceFileName << endl;
     fstream testFile;
     vector<string> res;
     while(1){
-        testFile.open(sourceFileName+".hfm");
+        testFile.open(sourceFileName);
         if(!testFile){
             cout << "can not find this file,please input again:" << endl;
             cin >> sourceFileName;
         }else{
+            //判断是文件夹还是文件
+            string firstLine;
+            getline(testFile, firstLine);
+            if(atoi(firstLine.c_str())==0){
+                //文件
+                res.push_back("1");
+            }
+            else{
+                //文件夹
+                res.push_back("0");
+            }
             testFile.close();
-            res.push_back(sourceFileName+".hfm");
+            res.push_back(sourceFileName);
             break;
         }
     }
     cout << "------------------------------------" << endl;
     //输出文件
-    cout << "please input the output filename that you want:" << endl << "(include the suffix)" << endl;
+    cout << "please input the output file/dir name that you want:" << endl << "(include the suffix)" << endl;
     string desFileName;
     cin >> desFileName;
     res.push_back(desFileName);
     
+    return res;
+}
+
+vector<long long> getAfterSize(string path,int nums){
+    ifstream fin("test.hfm", ios::ate);
+    fin.seekg(-1, fin.cur);
+    // 查看前一个字符是否为回车符
+    while ((char)fin.peek() != '\n'){
+        fin.seekg(-1, fin.cur);
+    }
+    fin.seekg(2, fin.cur);
+    string line;
+    getline(fin, line);
+    fin.clear();
+    fin.close();
+    vector<long long> res;
+    istringstream istr(line);
+    for (int i = 0; i < nums;i++){
+        string temp;
+        istr >> temp;
+        res.push_back(atoll(temp.c_str()));
+    }
     return res;
 }

@@ -12,18 +12,5 @@ string encode10to2(int length, int value);
 int getEncodeOrDecode();
 vector<string> getEncodeName();
 vector<string> getDecodeName();
-
-struct fileNode{
-    //文件类型,0为文件夹,1为文件
-    int type;
-    //文件大小
-    int filesize;
-    fileNode(int type,int filesize){
-        this->type = type;
-        this->filesize = filesize;
-    }
-};
-struct dirInfo{
-    int fileNum;
-    
-};
+//读取压缩完后各个文件的大小
+vector<long long> getAfterSize(string path, int nums);
