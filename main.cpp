@@ -132,6 +132,7 @@ int main(int argc,char *argv[]){
         case 2:
             vector<string> filename = getDecodeName();
             cout << "Decoding , please wait a moment..." << endl;
+            //todo:要先建立目录
             //文件夹解压
             if(filename[0]=="0"){
                 decodeDir(filename[1], filename[2]);

@@ -35,7 +35,7 @@ void FileIO::encodeFile(string desFileName,map<char, string> charCode,map<char, 
     //先将文件的头信息写好
     fileHead filehead;
     // 获取字符的种类,写头信息
-    filehead.lastValidBit = getLastValidBit(charFreq, charCode);
+    filehead.originBytes = file_size(sourceFileName);
     filehead.alphaVarity = charCode.size();
     fout.write((char *)&filehead, sizeof(filehead));
     //写字符的频度等等
@@ -117,6 +117,7 @@ void FileIO::decodeFile(fileHead filehead,map<char, long long> charFreq){
     is.seekg(sizeof(filehead) + filehead.alphaVarity * sizeof(alphaCode),ios::beg);
     //开始读取
     char readBuf;
+    long long writedBytes = 0;
     while(!is.eof()){
         is.read(&readBuf, sizeof(char));
         for (int i = 7; i >= 0;i--){
@@ -127,8 +128,12 @@ void FileIO::decodeFile(fileHead filehead,map<char, long long> charFreq){
             if(haffman.isLeaf(&temp)){
                 out.write(&temp.c, sizeof(char));
                 temp = root;
+                writedBytes++;
+            }
+            if(writedBytes>=filehead.originBytes){
+                goto finish;
             }
         }
     }
-    out.close();
+    finish:out.close();
 }

@@ -15,8 +15,8 @@ using namespace std;
 struct fileHead{
     //字符种类
     int alphaVarity;
-    //最后一个字节的有效位数
-    int lastValidBit;
+    //源文件的字节数
+    long long originBytes;
 };
 //字母及其频度
 struct alphaCode{
