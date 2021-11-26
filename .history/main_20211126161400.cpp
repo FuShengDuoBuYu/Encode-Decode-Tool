@@ -42,13 +42,15 @@ void encodeDir(string path,string desFilename){
     //把当前文件夹名字记录进去
     dirName.push_back(p.filename().string());
     //要压缩的文件夹的前面指导根目录的字符串
+    // cout << p.string().find_last_of(p.filename().string()) << endl;
     string headPath = path.substr(0, desFilename.find_last_of(p.filename().string())-1);
+    // cout << headPath << endl;
     //记录子文件(夹)
     for(auto const& entry: recursive_directory_iterator(path)){
         if(entry.status().type() == file_type::directory){
-            dirName.push_back(entry.path().string().substr(headPath.length()-1));
+            dirName.push_back(entry.path().string().substr(headPath.length()));
         }else{
-            fileName.push_back(entry.path().string().substr(headPath.length()-1));
+            fileName.push_back(entry.path().string().substr(headPath.length()));
         }
     }
     //写入目录文件
