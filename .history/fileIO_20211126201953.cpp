@@ -1,20 +1,23 @@
 #include "fileIO.h"
 map<char, long long> FileIO::getCharFreq(){
+    //获取要输入的文件和输出的文件
     //用二进制流传输
     ifstream fin(sourceFileName,ios::binary);
     //用一个map匹配字符和其出现的频度
     map<char, long long> charFreq;
     while(!fin.eof()){
         //每次只接收一个字符,于是会有2^8种字符
-        char buffer;
-        fin.read(&buffer, sizeof(char));
+        char buffer[1];
+        fin.read(buffer, sizeof(char));
         //如果map里没有这个字符,就加入这个字符并将其频度设为1
-        if(charFreq.size()!=256 && charFreq.count(buffer)==0){
-            charFreq.insert(map<char, long long>::value_type(buffer, 1L));
+        if(charFreq.size()!=256 && charFreq.count(buffer[0])==0){
+            charFreq.insert(map<char, long long>::value_type(buffer[0], 1L));
         }
         //如果map中有这个字符,就将其频度++
         else{
-            charFreq[buffer]++;
+            long long freq = charFreq[buffer[0]];
+            freq++;
+            charFreq[buffer[0]] = freq;
         }
     }
     fin.close();
@@ -47,7 +50,7 @@ void FileIO::encodeFile(string desFileName,map<char, string> charCode,map<char, 
     unsigned char bufferbit = 0;
     char buffer;
     char bufferArray[1024];
-    int bufferArrayIndex = 0;
+    
     while(!fin.eof()){
         fin.read(&buffer, sizeof(char));
         string codeOfAlpha = charCode[buffer];
@@ -55,33 +58,17 @@ void FileIO::encodeFile(string desFileName,map<char, string> charCode,map<char, 
             bufferbit <<= 1;
             bufferbit |= (codeOfAlpha[strIdx] == '1');
             bufferLength++;
-            //当有一个字符的时候就放进待写数组里
+            //当有一个字符的时候就写
             if(bufferLength==8){
-                bufferArray[bufferArrayIndex] = bufferbit;
-                bufferArrayIndex++;
+                fout.write((char*)&bufferbit, sizeof(char));
                 bufferbit = 0;
                 bufferLength = 0;
-            }
-            //如果buffer数组满了,就写入文件
-            if(bufferArrayIndex==1024){
-                fout.write(bufferArray, sizeof(char) * 1024);
-                bufferArrayIndex = 0;
             }
         }
     }
     //将最后不足8位的bit补全并写入
     if(bufferLength!=0){
-        while(bufferLength!=8){
-            bufferbit <<= 1;
-            bufferLength++;
-        }
-        bufferArray[bufferArrayIndex] = bufferbit;
-        bufferArrayIndex++;
-        
-    }
-    //写数组剩下的东西
-    if(bufferArrayIndex!=0){
-        fout.write(bufferArray, bufferArrayIndex * sizeof(char));
+        fout.write((char*)&buffer, sizeof(char));
     }
     fout.close();
 }

@@ -96,11 +96,7 @@ void decodeDir(string sourceFilename,string desFilename){
     int fileNum =  atoi(dirNum.c_str());
     for (int i = 0; i < fileNum;i++){
         getline(is,path);
-        if(desFilename!="")
-            create_directories(desFilename+"\\"+path);
-        else{
-            create_directories(path);
-        }
+        create_directories(desFilename+"\\"+path);
     }
     //获取文件
     getline(is,filesNum);
@@ -129,12 +125,7 @@ void decodeDir(string sourceFilename,string desFilename){
         }
         temp.close();
         //解压各个单文件
-        if(desFilename!="")
-            decodeSingleFile("temp.hfm",desFilename+"\\"+filePaths[i]);
-        else{
-            decodeSingleFile("temp.hfm",filePaths[i]);
-        }
-        
+        decodeSingleFile("temp.hfm",desFilename+"\\"+filePaths[i]);
         remove("temp.hfm");
     }
 }

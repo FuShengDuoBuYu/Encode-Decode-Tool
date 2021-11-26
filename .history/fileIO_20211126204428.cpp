@@ -14,7 +14,9 @@ map<char, long long> FileIO::getCharFreq(){
         }
         //如果map中有这个字符,就将其频度++
         else{
-            charFreq[buffer]++;
+            long long freq = charFreq[buffer];
+            freq++;
+            charFreq[buffer] = freq;
         }
     }
     fin.close();

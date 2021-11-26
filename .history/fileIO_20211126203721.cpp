@@ -10,11 +10,13 @@ map<char, long long> FileIO::getCharFreq(){
         fin.read(&buffer, sizeof(char));
         //如果map里没有这个字符,就加入这个字符并将其频度设为1
         if(charFreq.size()!=256 && charFreq.count(buffer)==0){
-            charFreq.insert(map<char, long long>::value_type(buffer, 1L));
+            charFreq.insert(map<char, long long>::value_type(buffer[0], 1L));
         }
         //如果map中有这个字符,就将其频度++
         else{
-            charFreq[buffer]++;
+            long long freq = charFreq[buffer[0]];
+            freq++;
+            charFreq[buffer[0]] = freq;
         }
     }
     fin.close();

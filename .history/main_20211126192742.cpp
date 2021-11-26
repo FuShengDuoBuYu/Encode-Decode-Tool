@@ -132,7 +132,7 @@ void decodeDir(string sourceFilename,string desFilename){
         if(desFilename!="")
             decodeSingleFile("temp.hfm",desFilename+"\\"+filePaths[i]);
         else{
-            decodeSingleFile("temp.hfm",filePaths[i]);
+            create_directories(path);
         }
         
         remove("temp.hfm");

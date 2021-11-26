@@ -41,7 +41,7 @@ vector<string> getEncodeName(){
     //输入文件(夹)
     cout << "------------------------------------" << endl;
     cout << "please input the filename that you want to encode:" << endl << "(include the suffix)" << endl;
-    cin.sync();
+    
     //输入的文件(夹)目录
     while(1){
         string sourceFileName;
@@ -57,6 +57,7 @@ vector<string> getEncodeName(){
         //未找到文件
         else if(entry.status().type() == file_type::not_found){
             cout << "not found file or dir. input again:" << endl;
+            cin >> sourceFileName;
         }
         //文件
         else{
@@ -69,7 +70,7 @@ vector<string> getEncodeName(){
     //输出文件(夹)
     cout << "please input the output filename that you want:" << endl << "(include the suffix)" << endl;
     string desFileName;
-    getline(cin,desFileName);
+    cin >> desFileName;
     res.push_back(desFileName);
     return res;
 }
@@ -79,15 +80,14 @@ vector<string> getDecodeName(){
     cout << "------------------------------------" << endl;
     cout << "please input the filename that you want to decode:" << endl << "(include the suffix)" << endl;
     string sourceFileName;
-    cin.sync();
-    getline(cin,sourceFileName);
+    cin >> sourceFileName;
     fstream testFile;
     vector<string> res;
     while(1){
         testFile.open(sourceFileName);
         if(!testFile){
             cout << "can not find this file,please input again:" << endl;
-            getline(cin,sourceFileName);
+            cin >> sourceFileName;
         }else{
             //判断是文件夹还是文件
             string firstLine;
@@ -115,7 +115,7 @@ vector<string> getDecodeName(){
     //输出文件
     cout << "please input the output file/dir name that you want:" << endl << "(include the suffix)" << endl;
     string desFileName;
-    getline(cin,desFileName);
+    cin >> desFileName;
     res.push_back(desFileName);
     
     return res;

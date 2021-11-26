@@ -1,20 +1,23 @@
 #include "fileIO.h"
 map<char, long long> FileIO::getCharFreq(){
+    //获取要输入的文件和输出的文件
     //用二进制流传输
     ifstream fin(sourceFileName,ios::binary);
     //用一个map匹配字符和其出现的频度
     map<char, long long> charFreq;
     while(!fin.eof()){
         //每次只接收一个字符,于是会有2^8种字符
-        char buffer;
-        fin.read(&buffer, sizeof(char));
+        char buffer[1];
+        fin.read(buffer, sizeof(char));
         //如果map里没有这个字符,就加入这个字符并将其频度设为1
-        if(charFreq.size()!=256 && charFreq.count(buffer)==0){
-            charFreq.insert(map<char, long long>::value_type(buffer, 1L));
+        if(charFreq.size()!=256 && charFreq.count(buffer[0])==0){
+            charFreq.insert(map<char, long long>::value_type(buffer[0], 1L));
         }
         //如果map中有这个字符,就将其频度++
         else{
-            charFreq[buffer]++;
+            long long freq = charFreq[buffer[0]];
+            freq++;
+            charFreq[buffer[0]] = freq;
         }
     }
     fin.close();
@@ -57,7 +60,7 @@ void FileIO::encodeFile(string desFileName,map<char, string> charCode,map<char, 
             bufferLength++;
             //当有一个字符的时候就放进待写数组里
             if(bufferLength==8){
-                bufferArray[bufferArrayIndex] = bufferbit;
+                bufferArray[bufferArrayIndex] = buffer;
                 bufferArrayIndex++;
                 bufferbit = 0;
                 bufferLength = 0;
@@ -69,17 +72,16 @@ void FileIO::encodeFile(string desFileName,map<char, string> charCode,map<char, 
             }
         }
     }
+    cout << "here" << endl;
     //将最后不足8位的bit补全并写入
     if(bufferLength!=0){
         while(bufferLength!=8){
-            bufferbit <<= 1;
-            bufferLength++;
+            buffer <<= 1;
         }
-        bufferArray[bufferArrayIndex] = bufferbit;
+        bufferArray[bufferArrayIndex] = buffer;
         bufferArrayIndex++;
         
     }
-    //写数组剩下的东西
     if(bufferArrayIndex!=0){
         fout.write(bufferArray, bufferArrayIndex * sizeof(char));
     }

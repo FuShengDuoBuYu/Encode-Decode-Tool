@@ -79,7 +79,6 @@ vector<string> getDecodeName(){
     cout << "------------------------------------" << endl;
     cout << "please input the filename that you want to decode:" << endl << "(include the suffix)" << endl;
     string sourceFileName;
-    cin.sync();
     getline(cin,sourceFileName);
     fstream testFile;
     vector<string> res;

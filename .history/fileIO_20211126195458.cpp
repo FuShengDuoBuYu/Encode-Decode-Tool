@@ -1,20 +1,23 @@
 #include "fileIO.h"
 map<char, long long> FileIO::getCharFreq(){
+    //获取要输入的文件和输出的文件
     //用二进制流传输
     ifstream fin(sourceFileName,ios::binary);
     //用一个map匹配字符和其出现的频度
     map<char, long long> charFreq;
     while(!fin.eof()){
         //每次只接收一个字符,于是会有2^8种字符
-        char buffer;
-        fin.read(&buffer, sizeof(char));
+        char buffer[1];
+        fin.read(buffer, sizeof(char));
         //如果map里没有这个字符,就加入这个字符并将其频度设为1
-        if(charFreq.size()!=256 && charFreq.count(buffer)==0){
-            charFreq.insert(map<char, long long>::value_type(buffer, 1L));
+        if(charFreq.size()!=256 && charFreq.count(buffer[0])==0){
+            charFreq.insert(map<char, long long>::value_type(buffer[0], 1L));
         }
         //如果map中有这个字符,就将其频度++
         else{
-            charFreq[buffer]++;
+            long long freq = charFreq[buffer[0]];
+            freq++;
+            charFreq[buffer[0]] = freq;
         }
     }
     fin.close();
@@ -44,45 +47,32 @@ void FileIO::encodeFile(string desFileName,map<char, string> charCode,map<char, 
     ifstream fin(sourceFileName,ios::binary);
     int bufferLength = 0;
     //每次只接收一个字符,于是会有2^8种字符
-    unsigned char bufferbit = 0;
-    char buffer;
-    char bufferArray[1024];
-    int bufferArrayIndex = 0;
+    char buffer = 0;
     while(!fin.eof()){
         fin.read(&buffer, sizeof(char));
-        string codeOfAlpha = charCode[buffer];
-        for (int strIdx = 0; strIdx < codeOfAlpha.length();strIdx++){
-            bufferbit <<= 1;
-            bufferbit |= (codeOfAlpha[strIdx] == '1');
+        //获取此字符对应的哈夫曼编码
+        string codeOfAlpha = ;
+        for (int strIdx = 0; strIdx < charCode[buffer].length();strIdx++){
+            buffer <<= 1;
+            buffer |= (charCode[buffer][strIdx] == '1');
             bufferLength++;
-            //当有一个字符的时候就放进待写数组里
+
             if(bufferLength==8){
-                bufferArray[bufferArrayIndex] = bufferbit;
-                bufferArrayIndex++;
-                bufferbit = 0;
-                bufferLength = 0;
-            }
-            //如果buffer数组满了,就写入文件
-            if(bufferArrayIndex==1024){
-                fout.write(bufferArray, sizeof(char) * 1024);
-                bufferArrayIndex = 0;
+                fout.write(&buffer, sizeof(char));
+                buffer = 0;
             }
         }
+            // //一旦字符串长度大于8,就将其转为一个char并写入文件
+            // while (bitsToWrite.length() >= 8)
+            // {
+            //     char towrite = encode10to2(bitsToWrite.substr(0, 8));
+            //     fout.write(&towrite, sizeof(char));
+            //     bitsToWrite = bitsToWrite.substr(8, bitsToWrite.length() - 8);
+            // }
     }
     //将最后不足8位的bit补全并写入
-    if(bufferLength!=0){
-        while(bufferLength!=8){
-            bufferbit <<= 1;
-            bufferLength++;
-        }
-        bufferArray[bufferArrayIndex] = bufferbit;
-        bufferArrayIndex++;
-        
-    }
-    //写数组剩下的东西
-    if(bufferArrayIndex!=0){
-        fout.write(bufferArray, bufferArrayIndex * sizeof(char));
-    }
+    char towrite = encode10to2(bitsToWrite);
+    fout.write(&towrite, sizeof(char));
     fout.close();
 }
 

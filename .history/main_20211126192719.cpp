@@ -129,12 +129,7 @@ void decodeDir(string sourceFilename,string desFilename){
         }
         temp.close();
         //解压各个单文件
-        if(desFilename!="")
-            decodeSingleFile("temp.hfm",desFilename+"\\"+filePaths[i]);
-        else{
-            decodeSingleFile("temp.hfm",filePaths[i]);
-        }
-        
+        decodeSingleFile("temp.hfm",desFilename+"\\"+filePaths[i]);
         remove("temp.hfm");
     }
 }

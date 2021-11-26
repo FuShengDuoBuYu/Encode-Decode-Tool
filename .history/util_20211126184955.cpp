@@ -41,7 +41,7 @@ vector<string> getEncodeName(){
     //输入文件(夹)
     cout << "------------------------------------" << endl;
     cout << "please input the filename that you want to encode:" << endl << "(include the suffix)" << endl;
-    cin.sync();
+    
     //输入的文件(夹)目录
     while(1){
         string sourceFileName;
@@ -79,7 +79,6 @@ vector<string> getDecodeName(){
     cout << "------------------------------------" << endl;
     cout << "please input the filename that you want to decode:" << endl << "(include the suffix)" << endl;
     string sourceFileName;
-    cin.sync();
     getline(cin,sourceFileName);
     fstream testFile;
     vector<string> res;
