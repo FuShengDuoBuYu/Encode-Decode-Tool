@@ -38,6 +38,10 @@ void encodeDir(string path,string desFilename){
     ofstream out(desFilename);
     vector<string> fileName;
     vector<string> dirName;
+    filesystem::path p(path);
+    //把当前文件夹名字记录进去
+    dirName.push_back(p.filename().string());
+    //记录子文件(夹)
     for(auto const& entry: recursive_directory_iterator(path)){
         if(entry.status().type() == file_type::directory){
             dirName.push_back(entry.path().string());
@@ -72,6 +76,8 @@ void encodeDir(string path,string desFilename){
 }
 
 void decodeDir(string sourceFilename,string desFilename){
+    //先创建用户指定的文件夹
+    create_directories(desFilename);
     ifstream is(sourceFilename);
     string dirNum,filesNum,str_filesize;
     string path;
@@ -80,7 +86,7 @@ void decodeDir(string sourceFilename,string desFilename){
     int fileNum =  atoi(dirNum.c_str());
     for (int i = 0; i < fileNum;i++){
         getline(is,path);
-        create_directories(path);
+        create_directories(desFilename+"\\"+path);
     }
     //获取文件
     getline(is,filesNum);
@@ -106,7 +112,9 @@ void decodeDir(string sourceFilename,string desFilename){
         for (long long j = 0; j < aftersize[i];j++){
             is2.read(&buffer, sizeof(char));
             temp.write(&buffer, sizeof(char));
+            temp.close();
         }
+        //todo:此处文件名有问题,需要修改
         decodeSingleFile("temp.hfm",".\\"+desFilename+"\\"+filePaths[i]);
         remove("temp.hfm");
     }

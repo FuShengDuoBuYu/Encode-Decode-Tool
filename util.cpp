@@ -131,6 +131,7 @@ vector<long long> getAfterSize(string path,int nums){
     fin.seekg(2, fin.cur);
     string line;
     getline(fin, line);
+    cout << line << endl;
     fin.clear();
     fin.close();
     vector<long long> res;
