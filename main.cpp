@@ -42,13 +42,13 @@ void encodeDir(string path,string desFilename){
     //把当前文件夹名字记录进去
     dirName.push_back(p.filename().string());
     //要压缩的文件夹的前面指导根目录的字符串
-    string headPath = path.substr(0, desFilename.find_last_of(p.filename().string())-1);
+    string headPath = path.substr(0, path.find_last_of(p.filename().string()));
     //记录子文件(夹)
     for(auto const& entry: recursive_directory_iterator(path)){
         if(entry.status().type() == file_type::directory){
-            dirName.push_back(entry.path().string().substr(headPath.length()-1));
+            dirName.push_back(entry.path().string().substr(headPath.length()));
         }else{
-            fileName.push_back(entry.path().string().substr(headPath.length()-1));
+            fileName.push_back(entry.path().string().substr(headPath.length()));
         }
     }
     //写入目录文件
@@ -63,18 +63,18 @@ void encodeDir(string path,string desFilename){
         out << fileName[i] << endl;
     }
     out.close();
-    //写各个二进制文件
-    // vector<long long> afterSizes;
-    // for (int i = 0; i < fileName.size(); i++){
-        // int aftersize = encodeSingleFile(fileName[i], desFilename, 1);
-        // afterSizes.push_back(aftersize);
-    // }
-    //写压缩后的大小
-    // ofstream fout(desFilename,ios::app);
-    // fout << "\n";
-    // for (int i = 0; i < afterSizes.size();i++){
-        // fout << " " << afterSizes[i] ;
-    // }
+    // 写各个二进制文件
+    vector<long long> afterSizes;
+    for (int i = 0; i < fileName.size(); i++){
+        int aftersize = encodeSingleFile(headPath + fileName[i], desFilename, 1);
+        afterSizes.push_back(aftersize);
+    }
+    // 写压缩后的大小
+    ofstream fout(desFilename,ios::app);
+    fout << "\n";
+    for (int i = 0; i < afterSizes.size();i++){
+        fout << " " << afterSizes[i] ;
+    }
 }
 
 void decodeDir(string sourceFilename,string desFilename){
@@ -107,17 +107,17 @@ void decodeDir(string sourceFilename,string desFilename){
 
     ifstream is2(sourceFilename, ios::binary);
     is2.seekg(startIndex);
-    for (int i = 0; i < filePaths.size();i++){
+    for (int i = 0; i < aftersize.size();i++){
         ofstream temp("temp.hfm",ios::binary);
         //将每个文件的二进制数据写到temp里
         char buffer;
         for (long long j = 0; j < aftersize[i];j++){
             is2.read(&buffer, sizeof(char));
             temp.write(&buffer, sizeof(char));
-            temp.close();
         }
+        temp.close();
         //todo:此处文件名有问题,需要修改
-        decodeSingleFile("temp.hfm",".\\"+desFilename+"\\"+filePaths[i]);
+        decodeSingleFile("temp.hfm",desFilename+"\\"+filePaths[i]);
         remove("temp.hfm");
     }
 }
