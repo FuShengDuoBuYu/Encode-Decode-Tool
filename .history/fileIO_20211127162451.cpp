@@ -9,15 +9,18 @@ map<char, long long> FileIO::getCharFreq(){
     while(!fin.eof()){
         //每次只接收一个字符,于是会有2^8种字符
         fin.read(&buffer, sizeof(char));
-        //对应数组下标位置加一
+        //对应数组下标位置加以
         charFreqArray[(int)buffer + 128]++;
     }
-    //将有数据的字符写进map
     for (int i = 0; i < 256;i++){
         if(charFreqArray[i]!=0){
             charFreq.insert(map<char, long long>::value_type((char)i-128, charFreqArray[i]));
         }
     }
+        // map<char, long long>::reverse_iterator   iter;
+        //  for(iter = charFreq.rbegin(); iter != charFreq.rend(); iter++){
+        //       cout<<(int)iter->first<<endl;
+        //  }
     fin.close();
     return charFreq;
 }
@@ -41,29 +44,20 @@ void FileIO::encodeFile(string desFileName,map<char, string> charCode,map<char, 
         alphaCode af(i);
         fout.write((char*)&af,sizeof(af));
     }
-    //将哈夫曼码放到一个结构数组里
-    struct CharInfo{
-		CharInfo() : code("") { }
-		string code;
-	}charInfoArray[256];
-    //字母及其哈夫曼码
-    map<char, string>::reverse_iterator   iter;
-    for(iter = charCode.rbegin(); iter != charCode.rend(); iter++){
-        charInfoArray[(int)iter->first + 128].code = iter->second;
-    }
     //写文件的内容
     ifstream fin(sourceFileName,ios::binary);
     int bufferLength = 0;
     //每次只接收一个字符,于是会有2^8种字符
     unsigned char bufferbit = 0;
     char buffer;
-    char bufferArray[1024*1024];
+    char bufferArray[1024];
     int bufferArrayIndex = 0;
     while(!fin.eof()){
         fin.read(&buffer, sizeof(char));
-        for (int strIdx = 0; strIdx < charInfoArray[(int)buffer+128].code.length();strIdx++){
+        string codeOfAlpha = charCode[buffer];
+        for (int strIdx = 0; strIdx < codeOfAlpha.length();strIdx++){
             bufferbit <<= 1;
-            bufferbit |= (charInfoArray[(int)buffer+128].code[strIdx] == '1');
+            bufferbit |= (codeOfAlpha[strIdx] == '1');
             bufferLength++;
             //当有一个字符的时候就放进待写数组里
             if(bufferLength==8){
@@ -73,8 +67,8 @@ void FileIO::encodeFile(string desFileName,map<char, string> charCode,map<char, 
                 bufferLength = 0;
             }
             //如果buffer数组满了,就写入文件
-            if(bufferArrayIndex==1024 * 1024){
-                fout.write(bufferArray, sizeof(char) * 1024 *1024);
+            if(bufferArrayIndex==1024){
+                fout.write(bufferArray, sizeof(char) * 1024);
                 bufferArrayIndex = 0;
             }
         }
@@ -136,7 +130,6 @@ void FileIO::decodeFile(fileHead filehead,map<char, long long> charFreq){
     if(charFreq.size()==0){
         return;
     }
-    
     //恢复哈夫曼树
     Haffman haffman = Haffman(charFreq);
     haffman.createHaffmanTree();
@@ -147,9 +140,6 @@ void FileIO::decodeFile(fileHead filehead,map<char, long long> charFreq){
     //开始读取
     char readBuf;
     long long writedBytes = 0;
-    char writeBufferArray[1024 * 1024];
-    int writeBufferArrayIndex = 0;
-    
     while(!is.eof()){
         is.read(&readBuf, sizeof(char));
         for (int i = 7; i >= 0;i--){
@@ -158,30 +148,14 @@ void FileIO::decodeFile(fileHead filehead,map<char, long long> charFreq){
             else
                 temp = *temp.left;
             if(haffman.isLeaf(&temp)){
-                // out.write(&temp.c, sizeof(char));
-                //该字符放到缓存数组里
-                writeBufferArray[writeBufferArrayIndex] = temp.c;
-                //缓存指针加一
-                writeBufferArrayIndex++;
+                out.write(&temp.c, sizeof(char));
                 temp = root;
                 writedBytes++;
-            }
-            //缓存数组满,写入文件
-            if(writeBufferArrayIndex==1024*1024){
-                out.write(writeBufferArray, 1024 * 1024 * sizeof(char));
-                writeBufferArrayIndex = 0;
             }
             if(writedBytes>=filehead.originBytes){
                 goto finish;
             }
         }
     }
-    //将残留的数据写进去
-    finish: ;
-        out.write(writeBufferArray, writeBufferArrayIndex * sizeof(char));
-        out.close();
-    
-    
-    
-    
+    finish:out.close();
 }

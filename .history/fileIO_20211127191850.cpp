@@ -165,15 +165,17 @@ void FileIO::decodeFile(fileHead filehead,map<char, long long> charFreq){
                 writeBufferArrayIndex++;
                 temp = root;
                 writedBytes++;
+
+                
             }
             //缓存数组满,写入文件
-            if(writeBufferArrayIndex==1024*1024){
-                out.write(writeBufferArray, 1024 * 1024 * sizeof(char));
-                writeBufferArrayIndex = 0;
-            }
-            if(writedBytes>=filehead.originBytes){
-                goto finish;
-            }
+                if(writeBufferArrayIndex==1024*1024){
+                    out.write(writeBufferArray, 1024 * 1024 * sizeof(char));
+                    writeBufferArrayIndex = 0;
+                }
+                if(writedBytes>=filehead.originBytes){
+                    goto finish;
+                }
         }
     }
     //将残留的数据写进去

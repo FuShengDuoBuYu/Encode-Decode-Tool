@@ -165,6 +165,8 @@ void FileIO::decodeFile(fileHead filehead,map<char, long long> charFreq){
                 writeBufferArrayIndex++;
                 temp = root;
                 writedBytes++;
+
+                
             }
             //缓存数组满,写入文件
             if(writeBufferArrayIndex==1024*1024){

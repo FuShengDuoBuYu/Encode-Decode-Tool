@@ -49,6 +49,7 @@ void encodeDir(string path,string desFilename){
     else{
         headPath = "";
     }
+    cout << headPath << endl;
     //记录子文件(夹)
     for(auto const& entry: recursive_directory_iterator(path)){
         if(entry.status().type() == file_type::directory){

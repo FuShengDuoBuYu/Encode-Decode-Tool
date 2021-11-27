@@ -130,6 +130,7 @@ map<char, long long> FileIO::readFileHaffmanFreq(int alphaVariety){
 }
 
 void FileIO::decodeFile(fileHead filehead,map<char, long long> charFreq){
+    cout << "decode" << endl;
     ifstream is(sourceFileName, ios::binary);
     ofstream out(desFileName, ios::binary);
     //空文件直接return

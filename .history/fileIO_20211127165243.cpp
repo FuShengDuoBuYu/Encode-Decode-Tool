@@ -42,14 +42,9 @@ void FileIO::encodeFile(string desFileName,map<char, string> charCode,map<char, 
         fout.write((char*)&af,sizeof(af));
     }
     //将哈夫曼码放到一个结构数组里
-    struct CharInfo{
-		CharInfo() : code("") { }
-		string code;
-	}charInfoArray[256];
-    //字母及其哈夫曼码
     map<char, string>::reverse_iterator   iter;
     for(iter = charCode.rbegin(); iter != charCode.rend(); iter++){
-        charInfoArray[(int)iter->first + 128].code = iter->second;
+        cout<<iter->first<<" "<<iter->second<<endl;
     }
     //写文件的内容
     ifstream fin(sourceFileName,ios::binary);
@@ -57,13 +52,14 @@ void FileIO::encodeFile(string desFileName,map<char, string> charCode,map<char, 
     //每次只接收一个字符,于是会有2^8种字符
     unsigned char bufferbit = 0;
     char buffer;
-    char bufferArray[1024*1024];
+    char bufferArray[1024];
     int bufferArrayIndex = 0;
     while(!fin.eof()){
         fin.read(&buffer, sizeof(char));
-        for (int strIdx = 0; strIdx < charInfoArray[(int)buffer+128].code.length();strIdx++){
+        string codeOfAlpha = charCode[buffer];
+        for (int strIdx = 0; strIdx < codeOfAlpha.length();strIdx++){
             bufferbit <<= 1;
-            bufferbit |= (charInfoArray[(int)buffer+128].code[strIdx] == '1');
+            bufferbit |= (codeOfAlpha[strIdx] == '1');
             bufferLength++;
             //当有一个字符的时候就放进待写数组里
             if(bufferLength==8){
@@ -73,8 +69,8 @@ void FileIO::encodeFile(string desFileName,map<char, string> charCode,map<char, 
                 bufferLength = 0;
             }
             //如果buffer数组满了,就写入文件
-            if(bufferArrayIndex==1024 * 1024){
-                fout.write(bufferArray, sizeof(char) * 1024 *1024);
+            if(bufferArrayIndex==1024){
+                fout.write(bufferArray, sizeof(char) * 1024);
                 bufferArrayIndex = 0;
             }
         }
@@ -136,7 +132,6 @@ void FileIO::decodeFile(fileHead filehead,map<char, long long> charFreq){
     if(charFreq.size()==0){
         return;
     }
-    
     //恢复哈夫曼树
     Haffman haffman = Haffman(charFreq);
     haffman.createHaffmanTree();
@@ -147,9 +142,6 @@ void FileIO::decodeFile(fileHead filehead,map<char, long long> charFreq){
     //开始读取
     char readBuf;
     long long writedBytes = 0;
-    char writeBufferArray[1024 * 1024];
-    int writeBufferArrayIndex = 0;
-    
     while(!is.eof()){
         is.read(&readBuf, sizeof(char));
         for (int i = 7; i >= 0;i--){
@@ -158,30 +150,14 @@ void FileIO::decodeFile(fileHead filehead,map<char, long long> charFreq){
             else
                 temp = *temp.left;
             if(haffman.isLeaf(&temp)){
-                // out.write(&temp.c, sizeof(char));
-                //该字符放到缓存数组里
-                writeBufferArray[writeBufferArrayIndex] = temp.c;
-                //缓存指针加一
-                writeBufferArrayIndex++;
+                out.write(&temp.c, sizeof(char));
                 temp = root;
                 writedBytes++;
-            }
-            //缓存数组满,写入文件
-            if(writeBufferArrayIndex==1024*1024){
-                out.write(writeBufferArray, 1024 * 1024 * sizeof(char));
-                writeBufferArrayIndex = 0;
             }
             if(writedBytes>=filehead.originBytes){
                 goto finish;
             }
         }
     }
-    //将残留的数据写进去
-    finish: ;
-        out.write(writeBufferArray, writeBufferArrayIndex * sizeof(char));
-        out.close();
-    
-    
-    
-    
+    finish:out.close();
 }

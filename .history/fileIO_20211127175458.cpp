@@ -136,7 +136,6 @@ void FileIO::decodeFile(fileHead filehead,map<char, long long> charFreq){
     if(charFreq.size()==0){
         return;
     }
-    
     //恢复哈夫曼树
     Haffman haffman = Haffman(charFreq);
     haffman.createHaffmanTree();
@@ -149,7 +148,7 @@ void FileIO::decodeFile(fileHead filehead,map<char, long long> charFreq){
     long long writedBytes = 0;
     char writeBufferArray[1024 * 1024];
     int writeBufferArrayIndex = 0;
-    
+    cout << "before" << endl;
     while(!is.eof()){
         is.read(&readBuf, sizeof(char));
         for (int i = 7; i >= 0;i--){
@@ -165,23 +164,17 @@ void FileIO::decodeFile(fileHead filehead,map<char, long long> charFreq){
                 writeBufferArrayIndex++;
                 temp = root;
                 writedBytes++;
-            }
-            //缓存数组满,写入文件
-            if(writeBufferArrayIndex==1024*1024){
-                out.write(writeBufferArray, 1024 * 1024 * sizeof(char));
-                writeBufferArrayIndex = 0;
-            }
-            if(writedBytes>=filehead.originBytes){
-                goto finish;
+
+                //缓存数组满,写入文件
+                if(writeBufferArrayIndex==1024*1024){
+                    out.write(writeBufferArray, 1024 * 1024 * sizeof(char));
+                    writeBufferArrayIndex = 0;
+                }
+                if(writedBytes>=filehead.originBytes){
+                    goto finish;
+                }
             }
         }
     }
-    //将残留的数据写进去
-    finish: ;
-        out.write(writeBufferArray, writeBufferArrayIndex * sizeof(char));
-        out.close();
-    
-    
-    
-    
+    finish:out.close();
 }

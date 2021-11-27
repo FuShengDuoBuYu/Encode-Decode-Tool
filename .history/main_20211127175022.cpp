@@ -49,6 +49,7 @@ void encodeDir(string path,string desFilename){
     else{
         headPath = "";
     }
+    cout << headPath << endl;
     //记录子文件(夹)
     for(auto const& entry: recursive_directory_iterator(path)){
         if(entry.status().type() == file_type::directory){
@@ -115,23 +116,47 @@ void decodeDir(string sourceFilename,string desFilename){
     is.close();
     vector<long long> aftersize = getAfterSize(sourceFilename,filePaths.size());
     //解压各个分文件
-    char buffer;
+
     ifstream is2(sourceFilename, ios::binary);
     is2.seekg(startIndex);
+    char writeBufferArray[1024 * 1024];
+    long long writedSize = 0;
     for (int i = 0; i < aftersize.size();i++){
         ofstream temp("temp.hfm",ios::binary);
-        //将每个文件的二进制数据写到temp里
-        for (long long j = 0; j < aftersize[i];j++){
-            is2.read(&buffer, sizeof(char));
-            temp.write(&buffer, sizeof(char));
+        //将每个文件的二进制数据拷贝到temp里
+        
+        while(true){
+            if(aftersize[i]-writedSize<=(1024 * 1024)){
+                break;
+            }
+            else{
+                is2.read(writeBufferArray, 1024*1024*sizeof(char));
+                temp.write(writeBufferArray, 1024*1024*sizeof(char));
+                writedSize += (1024 * 1024);
+            }
+            cout << "copy 1024*1024" << endl;
         }
+        cout << "copy sigle" << endl;
+        is2.read(writeBufferArray, (aftersize[i]-writedSize)*sizeof(char));
+        temp.write(writeBufferArray, (aftersize[i]-writedSize)*sizeof(char));
+        // for (long long j = 0; j < aftersize[i];j++){
+        //     is2.read(&buffer, sizeof(char));
+        //     temp.write(&buffer, sizeof(char));
+        // }
         temp.close();
         //解压各个单文件
-        if(desFilename!="")
-            decodeSingleFile("temp.hfm",desFilename+"\\"+filePaths[i]);
+        // cout << "jieya" << endl;
+        if(desFilename!=""){
+            cout << "here" << endl;
+                        decodeSingleFile("temp.hfm",desFilename+"\\"+filePaths[i]);
+
+        }
         else{
+            
             decodeSingleFile("temp.hfm",filePaths[i]);
         }
+        
+        writedSize = 0;
         remove("temp.hfm");
     }
 }

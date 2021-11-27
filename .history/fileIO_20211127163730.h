@@ -29,7 +29,12 @@ struct alphaCode{
         this->freq = x.second;
     }
 };
-
+//字母及其哈夫曼码
+struct CharInfo{
+		CharInfo() : code(""), freq(0) { }
+		string code;
+		unsigned long long freq;
+	}charInfo[256];
 class FileIO{
     public:
         string sourceFileName;

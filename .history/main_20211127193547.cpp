@@ -49,6 +49,7 @@ void encodeDir(string path,string desFilename){
     else{
         headPath = "";
     }
+    cout << headPath << endl;
     //记录子文件(夹)
     for(auto const& entry: recursive_directory_iterator(path)){
         if(entry.status().type() == file_type::directory){
@@ -115,12 +116,13 @@ void decodeDir(string sourceFilename,string desFilename){
     is.close();
     vector<long long> aftersize = getAfterSize(sourceFilename,filePaths.size());
     //解压各个分文件
-    char buffer;
+
     ifstream is2(sourceFilename, ios::binary);
     is2.seekg(startIndex);
     for (int i = 0; i < aftersize.size();i++){
         ofstream temp("temp.hfm",ios::binary);
         //将每个文件的二进制数据写到temp里
+        char buffer;
         for (long long j = 0; j < aftersize[i];j++){
             is2.read(&buffer, sizeof(char));
             temp.write(&buffer, sizeof(char));
@@ -132,6 +134,7 @@ void decodeDir(string sourceFilename,string desFilename){
         else{
             decodeSingleFile("temp.hfm",filePaths[i]);
         }
+        
         remove("temp.hfm");
     }
 }
