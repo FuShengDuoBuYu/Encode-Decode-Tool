@@ -1,5 +1,6 @@
 #include "fileIO.h"
 #include "Haffman.h"
+#include <ctime>
 
 long long encodeSingleFile(string sourceFilename,string desFilename,int writeMode){
     long long size;
@@ -11,10 +12,10 @@ long long encodeSingleFile(string sourceFilename,string desFilename,int writeMod
         size = 0;
     else
         size = file_size(str);
-
     FileIO fileIO= FileIO(sourceFilename,desFilename);
     //字符的频率map
     map<char, long long> charFreq = fileIO.getCharFreq();
+    
     Haffman haffman = Haffman(charFreq);
     //字符的哈夫曼编码map
     map<char, string> charCode = haffman.createHaffmanCode();
@@ -44,12 +45,11 @@ void encodeDir(string path,string desFilename){
     //要压缩的文件夹的前面指导根目录的字符串
     string headPath;
     if(path.find('\\')!=string::npos){
-        headPath = path.substr(0, path.find_last_of(p.filename().string()));
+        headPath = path.substr(0, path.find(p.filename().string()));
     }
     else{
         headPath = "";
     }
-    cout << headPath << endl;
     //记录子文件(夹)
     for(auto const& entry: recursive_directory_iterator(path)){
         if(entry.status().type() == file_type::directory){
@@ -116,17 +116,18 @@ void decodeDir(string sourceFilename,string desFilename){
     is.close();
     vector<long long> aftersize = getAfterSize(sourceFilename,filePaths.size());
     //解压各个分文件
-
+    char buffer[512*1024];
     ifstream is2(sourceFilename, ios::binary);
     is2.seekg(startIndex);
     for (int i = 0; i < aftersize.size();i++){
         ofstream temp("temp.hfm",ios::binary);
         //将每个文件的二进制数据写到temp里
-        char buffer;
-        for (long long j = 0; j < aftersize[i];j++){
-            is2.read(&buffer, sizeof(char));
-            temp.write(&buffer, sizeof(char));
+        for (int j = 0; j < (aftersize[i] / (512*1024));j++){
+            is2.read(buffer, 512*1024*sizeof(char));
+            temp.write(buffer, 512*1024*sizeof(char));
         }
+        is2.read(buffer, (aftersize[i] % (512*1024))*sizeof(char));
+        temp.write(buffer, (aftersize[i] % (512*1024))*sizeof(char));
         temp.close();
         //解压各个单文件
         if(desFilename!="")
@@ -134,17 +135,18 @@ void decodeDir(string sourceFilename,string desFilename){
         else{
             decodeSingleFile("temp.hfm",filePaths[i]);
         }
-        
         remove("temp.hfm");
     }
 }
 
 int main(int argc,char *argv[]){
+    time_t begin,end;
     int mode = getEncodeOrDecode();
     switch(mode){
         case 1:{
             vector<string> filename = getEncodeName();
             cout << "Encoding , please wait a moment..." << endl;
+            begin=clock();
             //文件夹的压缩
             if(filename[0]=="0"){
                 encodeDir(filename[1],filename[2]);
@@ -154,12 +156,14 @@ int main(int argc,char *argv[]){
                 encodeSingleFile(filename[1], filename[2],0);
             }
             cout << "Encoding task finish!" << endl;
+            end=clock();
+            cout << "time = " << end - begin << endl;
             break;
         }
         case 2:
             vector<string> filename = getDecodeName();
             cout << "Decoding , please wait a moment..." << endl;
-            //todo:要先建立目录
+            begin=clock();
             //文件夹解压
             if(filename[0]=="0"){
                 decodeDir(filename[1], filename[2]);
@@ -168,7 +172,9 @@ int main(int argc,char *argv[]){
             else{
                 decodeSingleFile(filename[1], filename[2]);
             }
+            end=clock();
             cout << "Decoding task finish!" << endl;
+            cout << "time = " << end - begin << endl;
     }
     return 0;
 }

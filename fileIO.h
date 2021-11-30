@@ -29,6 +29,7 @@ struct alphaCode{
         this->freq = x.second;
     }
 };
+
 class FileIO{
     public:
         string sourceFileName;
