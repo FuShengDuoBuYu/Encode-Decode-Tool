@@ -1,6 +1,6 @@
 #include "Haffman.h"
 
-map<char, string> Haffman::createHaffmanCode(){ 
+map<char, string> Haffman::createHaffmanCode(){
     string haffmanCode;
     map<char, string> charCode;
     createHaffmanTree();

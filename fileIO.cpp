@@ -1,16 +1,35 @@
 #include "fileIO.h"
+#include <ctime>
 map<char, long long> FileIO::getCharFreq(){
     //用二进制流传输
     ifstream fin(sourceFileName,ios::binary);
     //用一个map匹配字符和其出现的频度
     map<char, long long> charFreq;
-    long long charFreqArray[256] = {0L};
     char buffer;
-    while(!fin.eof()){
-        //每次只接收一个字符,于是会有2^8种字符
-        fin.read(&buffer, sizeof(char));
-        //对应数组下标位置加一
-        charFreqArray[(int)buffer + 128]++;
+    long long charFreqArray[256] = {0L};
+    //一M一M的读取,减少IO次数
+    long long filesize = file_size(sourceFileName);
+    if(filesize==0){
+        while(!fin.eof()){
+            //每次只接收一个字符,于是会有2^8种字符
+            fin.read(&buffer, sizeof(char));
+            //对应数组下标位置加一
+            charFreqArray[(int)buffer + 128]++;
+        }
+    }
+    else{
+        char bufferArray[1024 * 1024];
+        for (int i = 0; i < filesize / (1024 * 1024);i++){
+            fin.read(bufferArray, 1024*1024*sizeof(char));
+            for (int j = 0; j < 1024 * 1024;j++){
+                charFreqArray[(int)bufferArray[j] + 128]++;
+            }
+        }
+        //不满1M的直接读取
+        fin.read(bufferArray, (filesize % (1024 * 1024))*sizeof(char));
+        for (int j = 0; j < filesize % (1024 * 1024);j++){
+            charFreqArray[(int)bufferArray[j] + 128]++;
+        }
     }
     //将有数据的字符写进map
     for (int i = 0; i < 256;i++){
@@ -53,29 +72,79 @@ void FileIO::encodeFile(string desFileName,map<char, string> charCode,map<char, 
     }
     //写文件的内容
     ifstream fin(sourceFileName,ios::binary);
+    long long filesize =  file_size(sourceFileName);
     int bufferLength = 0;
     //每次只接收一个字符,于是会有2^8种字符
     unsigned char bufferbit = 0;
-    char buffer;
-    char bufferArray[1024*1024];
+    char readChars[512*1024];
+    char bufferArray[512*1024];
     int bufferArrayIndex = 0;
-    while(!fin.eof()){
-        fin.read(&buffer, sizeof(char));
-        for (int strIdx = 0; strIdx < charInfoArray[(int)buffer+128].code.length();strIdx++){
-            bufferbit <<= 1;
-            bufferbit |= (charInfoArray[(int)buffer+128].code[strIdx] == '1');
-            bufferLength++;
-            //当有一个字符的时候就放进待写数组里
-            if(bufferLength==8){
-                bufferArray[bufferArrayIndex] = bufferbit;
-                bufferArrayIndex++;
-                bufferbit = 0;
-                bufferLength = 0;
+    char buffer;
+    if(filesize==0){
+        while(!fin.eof()){
+            fin.read(&buffer, sizeof(char));
+            for (int strIdx = 0; strIdx < charInfoArray[(int)buffer+128].code.length();strIdx++){
+                bufferbit <<= 1;
+                bufferbit |= (charInfoArray[(int)buffer+128].code[strIdx] == '1');
+                bufferLength++;
+                //当有一个字符的时候就放进待写数组里
+                if(bufferLength==8){
+                    bufferArray[bufferArrayIndex] = bufferbit;
+                    bufferArrayIndex++;
+                    bufferbit = 0;
+                    bufferLength = 0;
+                }
+                //如果buffer数组满了,就写入文件
+                if(bufferArrayIndex==1024){
+                    fout.write(bufferArray, sizeof(char) *1024);
+                    bufferArrayIndex = 0;
+                }
             }
-            //如果buffer数组满了,就写入文件
-            if(bufferArrayIndex==1024 * 1024){
-                fout.write(bufferArray, sizeof(char) * 1024 *1024);
-                bufferArrayIndex = 0;
+        }
+    }
+    else{
+        //每次读1M个字节,减少IO次数
+        for (int i = 0; i < (filesize / (512*1024));i++){
+            fin.read(readChars, (512*1024)*sizeof(char));
+            for (int j = 0; j < (512*1024);j++){
+                for (int strIdx = 0; strIdx < charInfoArray[(int)readChars[j]+128].code.length();strIdx++){
+                    bufferbit <<= 1;
+                    bufferbit |= (charInfoArray[(int)readChars[j]+128].code[strIdx] == '1');
+                    bufferLength++;
+                    //当有一个字符的时候就放进待写数组里
+                    if(bufferLength==8){
+                        bufferArray[bufferArrayIndex] = bufferbit;
+                        bufferArrayIndex++;
+                        bufferbit = 0;
+                        bufferLength = 0;
+                    }
+                    //如果buffer数组满了,就写入文件
+                    if(bufferArrayIndex==512*1024){
+                        fout.write(bufferArray, sizeof(char) *512*1024);
+                        bufferArrayIndex = 0;
+                    }
+                }
+            }
+        }
+        //最后不足1M的数据
+        fin.read(readChars, (filesize%(512*1024))*sizeof(char));
+        for (int j = 0; j < (filesize%(512*1024));j++){
+            for (int strIdx = 0; strIdx < charInfoArray[(int)readChars[j]+128].code.length();strIdx++){
+                bufferbit <<= 1;
+                bufferbit |= (charInfoArray[(int)readChars[j]+128].code[strIdx] == '1');
+                bufferLength++;
+                //当有一个字符的时候就放进待写数组里
+                if(bufferLength==8){
+                    bufferArray[bufferArrayIndex] = bufferbit;
+                    bufferArrayIndex++;
+                    bufferbit = 0;
+                    bufferLength = 0;
+                }
+                //如果buffer数组满了,就写入文件
+                if(bufferArrayIndex== 512*1024){
+                    fout.write(bufferArray, sizeof(char) *512*1024);
+                    bufferArrayIndex = 0;
+                }
             }
         }
     }
@@ -87,7 +156,6 @@ void FileIO::encodeFile(string desFileName,map<char, string> charCode,map<char, 
         }
         bufferArray[bufferArrayIndex] = bufferbit;
         bufferArrayIndex++;
-        
     }
     //写数组剩下的东西
     if(bufferArrayIndex!=0){
@@ -147,18 +215,45 @@ void FileIO::decodeFile(fileHead filehead,map<char, long long> charFreq){
     //开始读取
     char readBuf;
     long long writedBytes = 0;
-    char writeBufferArray[1024 * 1024];
+    char readChars[512 * 1024];
+    char writeBufferArray[512 * 1024];
     int writeBufferArrayIndex = 0;
-    
-    while(!is.eof()){
-        is.read(&readBuf, sizeof(char));
-        for (int i = 7; i >= 0;i--){
-            if(readBuf&(1<<i))
+    long long filesize = file_size(sourceFileName) - sizeof(filehead) + filehead.alphaVarity * sizeof(alphaCode);
+    for (int i = 0; i < filesize / (512 * 1024);i++){
+        is.read(readChars, (512 * 1024)*sizeof(char));
+        for (int j = 0; j < (512 * 1024);j++){
+            for (int k = 7; k >= 0;k--){
+                if(readChars[j]&(1<<k))
+                    temp = *temp.right;
+                else
+                    temp = *temp.left;
+                if(haffman.isLeaf(&temp)){
+                    //该字符放到缓存数组里
+                    writeBufferArray[writeBufferArrayIndex] = temp.c;
+                    //缓存指针加一
+                    writeBufferArrayIndex++;
+                    temp = root;
+                    writedBytes++;
+                }
+                //缓存数组满,写入文件
+                if(writeBufferArrayIndex==512*1024){
+                    out.write(writeBufferArray, 512 * 1024 * sizeof(char));
+                    writeBufferArrayIndex = 0;
+                }
+                if(writedBytes>=filehead.originBytes){
+                    goto finish;
+                }
+            }
+        }
+    }
+    is.read(readChars, (filesize%(512 * 1024))*sizeof(char));
+    for (int j = 0; j < (filesize%(512 * 1024));j++){
+        for (int k = 7; k >= 0;k--){
+            if(readChars[j]&(1<<k))
                 temp = *temp.right;
             else
                 temp = *temp.left;
             if(haffman.isLeaf(&temp)){
-                // out.write(&temp.c, sizeof(char));
                 //该字符放到缓存数组里
                 writeBufferArray[writeBufferArrayIndex] = temp.c;
                 //缓存指针加一
@@ -167,8 +262,8 @@ void FileIO::decodeFile(fileHead filehead,map<char, long long> charFreq){
                 writedBytes++;
             }
             //缓存数组满,写入文件
-            if(writeBufferArrayIndex==1024*1024){
-                out.write(writeBufferArray, 1024 * 1024 * sizeof(char));
+            if(writeBufferArrayIndex==512*1024){
+                out.write(writeBufferArray, 512 * 1024 * sizeof(char));
                 writeBufferArrayIndex = 0;
             }
             if(writedBytes>=filehead.originBytes){
@@ -180,8 +275,4 @@ void FileIO::decodeFile(fileHead filehead,map<char, long long> charFreq){
     finish: ;
         out.write(writeBufferArray, writeBufferArrayIndex * sizeof(char));
         out.close();
-    
-    
-    
-    
 }
